@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import med.voll.api.domain.consulta.validaciones.ValidadorDeCancelacion;
 import med.voll.api.domain.consulta.validaciones.ValidadorDeConsultas;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
@@ -24,6 +25,9 @@ public class AgendaDeConsultaService {
 
     @Autowired
     List<ValidadorDeConsultas> validadores;
+
+    @Autowired
+    List<ValidadorDeCancelacion> validadoresCancelacion;
 
     public DatosDetalleConsulta agendar(DatosAgendarConsulta datos) {
 
@@ -46,11 +50,22 @@ public class AgendaDeConsultaService {
         }
 
 
-        var consulta = new Consulta(null, medico, paciente, datos.fecha());
+        var consulta = new Consulta(medico, paciente, datos.fecha());
 
         consultaRepository.save(consulta);
 
         return new DatosDetalleConsulta(consulta);
+    }
+
+    public void cancelar(DatosCancelarConsulta datos) {
+        if(!consultaRepository.existsById(datos.idConsulta())){
+            throw new ValidacionDeIntegridad("La consulta no existe");
+        }
+
+        validadoresCancelacion.forEach(validador -> validador.validar(datos));
+
+        var consulta = consultaRepository.getReferenceById(datos.idConsulta());
+        consulta.cancelarConsulta(datos.motivoCancelamiento());
     }
 
     private Medico seleccionarMedico(DatosAgendarConsulta datos) {
