@@ -9,23 +9,30 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MedicoRepository extends JpaRepository<Medico, Long>{
+public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     Page<Medico> findByActivoTrue(Pageable paginacion);
 
-    //primer cambio
+    // primer cambio
 
     @Query("""
-        SELECT m FROM Medico m
-        WHERE m.activo = true
-        AND m.especialidad = :especialidad
-        AND m.id NOT IN (
-            SELECT c.medico.id FROM Consulta c
-            WHERE c.fecha = :fecha
-        )
-        ORDER BY rand()
-        LIMIT 1
-            """)
+            SELECT m FROM Medico m
+            WHERE m.activo = true
+            AND m.especialidad = :especialidad
+            AND m.id NOT IN (
+                SELECT c.medico.id FROM Consulta c
+                WHERE c.fecha = :fecha
+            )
+            ORDER BY rand()
+            LIMIT 1
+                """)
     Medico seleccionarMedicoPorEspecialidadDisponible(Especialidad especialidad, LocalDateTime fecha);
-    
+
+    @Query("""
+            SELECT p.activo
+            FROM Medico p
+            WHERE p.id = :idMedico
+            """)
+    Boolean findActivoById(Long idMedico);
+
 }
