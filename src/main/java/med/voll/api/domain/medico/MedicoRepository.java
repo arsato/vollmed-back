@@ -13,8 +13,6 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     Page<Medico> findByActivoTrue(Pageable paginacion);
 
-    // primer cambio
-
     @Query("""
             SELECT m FROM Medico m
             WHERE m.activo = true
